@@ -1,5 +1,13 @@
 {
+  "extraKnownMarketplaces": {
+    "claude-code-playbook": {
+      "source": {
+        "source": "github",
+        "repo": "toy-crane/claude-code-playbook"
+      }
+    }
+  },
   "enabledPlugins": {
-    "claude-code-playbook@toy-crane": true
+    "playbook-essentials@claude-code-playbook": true
   }
 }
