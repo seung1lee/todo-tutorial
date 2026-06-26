@@ -39,3 +39,12 @@ export const PRIORITIES: PriorityMeta[] = [
 export const PRIORITY_META: Record<Priority, PriorityMeta> = Object.fromEntries(
   PRIORITIES.map((meta) => [meta.value, meta])
 ) as Record<Priority, PriorityMeta>;
+
+// 목록 표시 필터. URL/localStorage에 저장하지 않는 화면 표시용 상태.
+export type TodoFilter = "all" | "active" | "completed";
+
+export const TODO_FILTERS: { value: TodoFilter; label: string }[] = [
+  { value: "all", label: "전체" },
+  { value: "active", label: "진행중" },
+  { value: "completed", label: "완료" },
+];

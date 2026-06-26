@@ -15,6 +15,18 @@ async function addTodo(user: ReturnType<typeof userEvent.setup>, text: string) {
   await user.type(input, `${text}{Enter}`);
 }
 
+// 5개(완료 2 / 미완료 3) 상태를 만드는 헬퍼.
+// addTodo가 앞쪽에 추가하므로 DOM 순서는 할일5..할일1이고,
+// 위쪽 체크박스 2개를 클릭해 완료로 만든다.
+async function seedFiveTodos(user: ReturnType<typeof userEvent.setup>) {
+  for (let i = 1; i <= 5; i++) {
+    await addTodo(user, `할일${i}`);
+  }
+  const checkboxes = screen.getAllByRole("checkbox");
+  await user.click(checkboxes[0]);
+  await user.click(checkboxes[1]);
+}
+
 describe("TodoList 검증 체크리스트", () => {
   it('1. 입력 필드에 "장보기" 입력 후 Enter → 목록에 추가됨', async () => {
     const user = userEvent.setup();
@@ -106,6 +118,89 @@ describe("TodoList 검증 체크리스트", () => {
     render(<TodoList />);
 
     expect(await screen.findByText("장보기")).toBeInTheDocument();
+    expect(screen.getAllByRole("listitem")).toHaveLength(1);
+  });
+});
+
+describe("Todo 필터링", () => {
+  it("'전체' 필터 선택 → 5개 모두 표시", async () => {
+    const user = userEvent.setup();
+    render(<TodoList />);
+    await seedFiveTodos(user);
+
+    await user.click(screen.getByRole("radio", { name: "전체" }));
+
+    expect(screen.getAllByRole("listitem")).toHaveLength(5);
+  });
+
+  it("'진행중' 필터 선택 → 미완료 3개만 표시", async () => {
+    const user = userEvent.setup();
+    render(<TodoList />);
+    await seedFiveTodos(user);
+
+    await user.click(screen.getByRole("radio", { name: "진행중" }));
+
+    const items = screen.getAllByRole("listitem");
+    expect(items).toHaveLength(3);
+    // 표시된 항목은 모두 미완료(취소선 없음)여야 한다
+    for (const item of items) {
+      expect(item.querySelector(".line-through")).toBeNull();
+    }
+  });
+
+  it("'완료' 필터 선택 → 완료 2개만 표시", async () => {
+    const user = userEvent.setup();
+    render(<TodoList />);
+    await seedFiveTodos(user);
+
+    await user.click(screen.getByRole("radio", { name: "완료" }));
+
+    const items = screen.getAllByRole("listitem");
+    expect(items).toHaveLength(2);
+    // 표시된 항목은 모두 완료(취소선 있음)여야 한다
+    for (const item of items) {
+      expect(item.querySelector(".line-through")).not.toBeNull();
+    }
+  });
+
+  it("Todo 0개일 때 '진행중' 선택 → '할 일이 없습니다' 메시지 표시", async () => {
+    const user = userEvent.setup();
+    render(<TodoList />);
+    await screen.findByText(/할 일이 없습니다/);
+
+    await user.click(screen.getByRole("radio", { name: "진행중" }));
+
+    expect(screen.getByText(/할 일이 없습니다/)).toBeInTheDocument();
+    expect(screen.queryByRole("listitem")).not.toBeInTheDocument();
+  });
+
+  it("항목이 있어도 필터 결과가 비면 '할 일이 없습니다' 메시지 표시", async () => {
+    const user = userEvent.setup();
+    render(<TodoList />);
+    // 미완료 항목만 추가한 뒤 '완료' 필터 → 결과 0개
+    await addTodo(user, "할일1");
+    await screen.findByText("할일1");
+
+    await user.click(screen.getByRole("radio", { name: "완료" }));
+
+    expect(screen.getByText(/할 일이 없습니다/)).toBeInTheDocument();
+    expect(screen.queryByRole("listitem")).not.toBeInTheDocument();
+  });
+
+  it("'완료' 필터 중 항목을 미완료로 변경 → 목록에서 사라짐", async () => {
+    const user = userEvent.setup();
+    render(<TodoList />);
+    await seedFiveTodos(user);
+
+    await user.click(screen.getByRole("radio", { name: "완료" }));
+    // seedFiveTodos는 할일5, 할일4를 완료로 만든다
+    expect(screen.getAllByRole("listitem")).toHaveLength(2);
+    expect(screen.getByText("할일5")).toBeInTheDocument();
+
+    // 완료였던 '할일5'(첫 항목)를 미완료로 토글하면 '완료' 목록에서 사라진다
+    await user.click(screen.getAllByRole("checkbox", { name: "완료 취소" })[0]);
+
+    expect(screen.queryByText("할일5")).not.toBeInTheDocument();
     expect(screen.getAllByRole("listitem")).toHaveLength(1);
   });
 });
