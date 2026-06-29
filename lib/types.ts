@@ -82,6 +82,14 @@ export const CATEGORY_META: Record<Category, CategoryMeta> =
     CATEGORIES.map((meta) => [meta.value, meta])
   ) as Record<Category, CategoryMeta>;
 
+// 카테고리별 표시 필터. "all"은 필터 해제(전체 표시).
+export type CategoryFilter = "all" | Category;
+
+export const CATEGORY_FILTERS: { value: CategoryFilter; label: string }[] = [
+  { value: "all", label: "전체" },
+  ...CATEGORIES.map((meta) => ({ value: meta.value, label: meta.label })),
+];
+
 // 목록 정렬 기준. localStorage에 저장하지 않는 화면 표시용 상태.
 export type SortBy = "created" | "name" | "due";
 

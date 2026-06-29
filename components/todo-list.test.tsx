@@ -141,7 +141,9 @@ describe("Todo 필터링", () => {
     render(<TodoList />);
     await seedFiveTodos(user);
 
-    await user.click(screen.getByRole("radio", { name: "전체" }));
+    // 상태 필터 그룹의 '전체'(카테고리 필터에도 '전체'가 있어 그룹으로 한정)
+    const statusGroup = screen.getByRole("radiogroup", { name: "필터" });
+    await user.click(within(statusGroup).getByRole("radio", { name: "전체" }));
 
     expect(screen.getAllByRole("listitem")).toHaveLength(5);
   });
@@ -339,5 +341,55 @@ describe("Todo 카테고리 태그", () => {
     const item = await screen.findByRole("listitem");
     expect(item).toHaveTextContent("보고서 작성");
     expect(item).toHaveTextContent("업무");
+  });
+});
+
+describe("Todo 카테고리별 필터", () => {
+  // 입력 폼 카테고리 그룹에서 태그를 선택해 추가하는 헬퍼
+  async function addTodoWithCategory(
+    user: ReturnType<typeof userEvent.setup>,
+    text: string,
+    categoryLabel: string
+  ) {
+    const group = screen.getByRole("radiogroup", { name: "카테고리" });
+    await user.click(within(group).getByRole("radio", { name: categoryLabel }));
+    await addTodo(user, text);
+  }
+
+  it("'업무' 필터 선택 → 업무 태그 항목만 표시된다", async () => {
+    const user = userEvent.setup();
+    render(<TodoList />);
+    await addTodoWithCategory(user, "보고서", "업무");
+    await addTodoWithCategory(user, "운동", "개인");
+    await addTodo(user, "태그없음");
+    await screen.findByText("태그없음");
+
+    const filterGroup = screen.getByRole("radiogroup", {
+      name: "카테고리 필터",
+    });
+    await user.click(within(filterGroup).getByRole("radio", { name: "업무" }));
+
+    expect(screen.getByText("보고서")).toBeInTheDocument();
+    expect(screen.queryByText("운동")).not.toBeInTheDocument();
+    expect(screen.queryByText("태그없음")).not.toBeInTheDocument();
+    expect(screen.getAllByRole("listitem")).toHaveLength(1);
+  });
+
+  it("'전체' 선택 → 필터가 해제되고 전체 목록이 표시된다", async () => {
+    const user = userEvent.setup();
+    render(<TodoList />);
+    await addTodoWithCategory(user, "보고서", "업무");
+    await addTodoWithCategory(user, "운동", "개인");
+    await addTodo(user, "태그없음");
+    await screen.findByText("태그없음");
+
+    const filterGroup = screen.getByRole("radiogroup", {
+      name: "카테고리 필터",
+    });
+    await user.click(within(filterGroup).getByRole("radio", { name: "업무" }));
+    expect(screen.getAllByRole("listitem")).toHaveLength(1);
+
+    await user.click(within(filterGroup).getByRole("radio", { name: "전체" }));
+    expect(screen.getAllByRole("listitem")).toHaveLength(3);
   });
 });

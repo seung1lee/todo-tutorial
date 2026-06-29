@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import type {
+  CategoryFilter,
   SortBy,
   TodoFilter as TodoFilterValue,
 } from "@/lib/types";
@@ -9,6 +10,7 @@ import { matchesSearch, sortTodos } from "@/lib/todo-utils";
 import { useTodos } from "@/hooks/use-todos";
 import { TodoInput } from "@/components/todo-input";
 import { TodoFilter } from "@/components/todo-filter";
+import { TodoCategoryFilter } from "@/components/todo-category-filter";
 import { TodoSort } from "@/components/todo-sort";
 import { TodoSearch } from "@/components/todo-search";
 import { TodoItem } from "@/components/todo-item";
@@ -17,6 +19,7 @@ export function TodoList() {
   const { todos, loaded, addTodo, toggleTodo, deleteTodo, editTodo } =
     useTodos();
   const [filter, setFilter] = useState<TodoFilterValue>("all");
+  const [categoryFilter, setCategoryFilter] = useState<CategoryFilter>("all");
   const [sortBy, setSortBy] = useState<SortBy>("created");
   const [query, setQuery] = useState("");
 
@@ -26,6 +29,9 @@ export function TodoList() {
       if (filter === "completed") return todo.completed;
       return true;
     })
+    .filter(
+      (todo) => categoryFilter === "all" || todo.category === categoryFilter
+    )
     .filter((todo) => matchesSearch(todo, query));
   const visibleTodos = sortTodos(filteredTodos, sortBy);
 
@@ -39,6 +45,8 @@ export function TodoList() {
         <TodoFilter value={filter} onChange={setFilter} />
         <TodoSort value={sortBy} onChange={setSortBy} />
       </div>
+
+      <TodoCategoryFilter value={categoryFilter} onChange={setCategoryFilter} />
 
       {loaded && visibleTodos.length === 0 ? (
         <p className="py-6 text-center text-sm text-muted-foreground">
