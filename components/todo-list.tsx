@@ -1,28 +1,38 @@
 "use client";
 
 import { useState } from "react";
-import type { TodoFilter as TodoFilterValue } from "@/lib/types";
+import type {
+  SortBy,
+  TodoFilter as TodoFilterValue,
+} from "@/lib/types";
+import { sortTodos } from "@/lib/todo-utils";
 import { useTodos } from "@/hooks/use-todos";
 import { TodoInput } from "@/components/todo-input";
 import { TodoFilter } from "@/components/todo-filter";
+import { TodoSort } from "@/components/todo-sort";
 import { TodoItem } from "@/components/todo-item";
 
 export function TodoList() {
   const { todos, loaded, addTodo, toggleTodo, deleteTodo, editTodo } =
     useTodos();
   const [filter, setFilter] = useState<TodoFilterValue>("all");
+  const [sortBy, setSortBy] = useState<SortBy>("created");
 
-  const visibleTodos = todos.filter((todo) => {
+  const filteredTodos = todos.filter((todo) => {
     if (filter === "active") return !todo.completed;
     if (filter === "completed") return todo.completed;
     return true;
   });
+  const visibleTodos = sortTodos(filteredTodos, sortBy);
 
   return (
     <div className="flex flex-col gap-4">
       <TodoInput onAdd={addTodo} />
 
-      <TodoFilter value={filter} onChange={setFilter} />
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <TodoFilter value={filter} onChange={setFilter} />
+        <TodoSort value={sortBy} onChange={setSortBy} />
+      </div>
 
       {loaded && visibleTodos.length === 0 ? (
         <p className="py-6 text-center text-sm text-muted-foreground">

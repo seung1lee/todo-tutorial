@@ -44,6 +44,14 @@ export const PRIORITY_META: Record<Priority, PriorityMeta> = Object.fromEntries(
   PRIORITIES.map((meta) => [meta.value, meta])
 ) as Record<Priority, PriorityMeta>;
 
+// 목록 정렬 기준. localStorage에 저장하지 않는 화면 표시용 상태.
+export type SortBy = "created" | "name";
+
+export const SORT_OPTIONS: { value: SortBy; label: string }[] = [
+  { value: "created", label: "생성일순" },
+  { value: "name", label: "이름순" },
+];
+
 // 목록 표시 필터. URL/localStorage에 저장하지 않는 화면 표시용 상태.
 export type TodoFilter = "all" | "active" | "completed";
 

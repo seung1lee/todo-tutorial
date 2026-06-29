@@ -204,3 +204,39 @@ describe("Todo 필터링", () => {
     expect(screen.getAllByRole("listitem")).toHaveLength(1);
   });
 });
+
+describe("Todo 정렬", () => {
+  it("'이름순' 선택 → 가나다순으로 정렬된다", async () => {
+    const user = userEvent.setup();
+    render(<TodoList />);
+    await addTodo(user, "바나나");
+    await addTodo(user, "사과");
+    await addTodo(user, "가지");
+    await screen.findByText("가지");
+
+    await user.click(screen.getByRole("radio", { name: "이름순" }));
+
+    const items = screen.getAllByRole("listitem");
+    expect(items[0]).toHaveTextContent("가지");
+    expect(items[1]).toHaveTextContent("바나나");
+    expect(items[2]).toHaveTextContent("사과");
+  });
+
+  it("'생성일순' 선택 → 최신순으로 정렬된다", async () => {
+    const user = userEvent.setup();
+    render(<TodoList />);
+    await addTodo(user, "첫번째");
+    await addTodo(user, "두번째");
+    await addTodo(user, "세번째");
+    await screen.findByText("세번째");
+
+    // 이름순으로 바꿨다가 다시 생성일순으로 복귀
+    await user.click(screen.getByRole("radio", { name: "이름순" }));
+    await user.click(screen.getByRole("radio", { name: "생성일순" }));
+
+    const items = screen.getAllByRole("listitem");
+    expect(items[0]).toHaveTextContent("세번째");
+    expect(items[1]).toHaveTextContent("두번째");
+    expect(items[2]).toHaveTextContent("첫번째");
+  });
+});
