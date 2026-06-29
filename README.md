@@ -28,6 +28,7 @@ bun dev
 자주 쓰는 스크립트:
 
 ```bash
+bun dev            # 개발 서버 실행
 bun run build      # 프로덕션 빌드
 bun run start      # 빌드 결과 실행
 bun run lint       # ESLint
