@@ -48,6 +48,8 @@ export function TodoItem({ todo, onToggle, onDelete, onEdit }: TodoItemProps) {
   }
 
   function handleKeyDown(event: React.KeyboardEvent<HTMLInputElement>) {
+    // IME 조합 중(한글 등)에 확정용으로 누른 Enter는 무시한다.
+    if (event.nativeEvent.isComposing) return;
     if (event.key === "Enter") {
       event.preventDefault();
       commit();

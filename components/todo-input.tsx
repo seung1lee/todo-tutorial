@@ -28,6 +28,8 @@ export function TodoInput({ onAdd }: TodoInputProps) {
 
   function handleSubmit(event: React.FormEvent) {
     event.preventDefault();
+    // 빈/공백 입력이면 추가하지 않고 선택값(우선순위·마감일·카테고리)도 유지한다.
+    if (!value.trim()) return;
     onAdd(value, priority, dueDate || undefined, category);
     setValue("");
     setPriority(DEFAULT_PRIORITY);
