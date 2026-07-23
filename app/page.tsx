@@ -14,7 +14,7 @@ export default function Page() {
         <div>
           {title}
           <p className="font-mono text-xs text-muted-foreground">
-            (Press <kbd>d</kbd> to toggle dark mode)
+            오늘 하루도 차근차근, 할 일을 함께 정리해봐요 (다크 모드는 <kbd>d</kbd>)
           </p>
         </div>
         <TodoList />
